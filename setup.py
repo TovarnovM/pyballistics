@@ -57,4 +57,6 @@ setup(
         "dev": dev_requires,
         "docs": ["sphinx", "sphinx-rtd-theme"]
     },
+    include_package_data=True
+    # data_files = [('', ['src/pyballistics/gpowders_si.csv'])]
 )

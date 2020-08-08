@@ -92,7 +92,7 @@ def ozvb_lagrange(opts_dict):
 
     {
         'stop_reason': str,     # причина остановки расчета ('t_max', 'steps_max', 'v_p', 'x_p', 'p_max')
-        'execution time': float,# время выполнения расчета в секундках
+        'execution_time': float,# время выполнения расчета в секундках
         'layers': [             # список со словарями. В каждом словаре хранятся данные одного временного слоя
             {                       # Словарь первого временного слоя. Слой состоит из N ячеек
                 't': 0.0,               # время временного слоя в секундах
@@ -124,7 +124,7 @@ def ozvb_lagrange(opts_dict):
     >>> print(result)
     {
         'stop_reason': 'v_p',
-        'execution time': 0.167843300000186, 
+        'execution_time': 0.167843300000186, 
         'layers': [
             {
                 't': 0.0,
@@ -174,7 +174,7 @@ def ozvb_lagrange(opts_dict):
             results.append(layer.get_result())
         return {
             'stop_reason': layer.get_stop_reason(),
-            'execution time': time.perf_counter() - t1,
+            'execution_time': time.perf_counter() - t1,
             'layers': results
         }
 
@@ -183,7 +183,7 @@ def ozvb_lagrange(opts_dict):
             'stop_reason': 'error',
             'error_message': str(e),
             'exception': e,
-            'execution time': time.perf_counter() - t1
+            'execution_time': time.perf_counter() - t1
             }
 
 
