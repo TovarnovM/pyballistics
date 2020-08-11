@@ -547,7 +547,7 @@ cpdef dict _construct_results(list ts, list ys, list stuffs, int reason):
     return res
 
 @cython.wraparound(True)
-cdef void trim_interpolate_results(list ts, list ys, , list stuffs, Opts* opts, int n_steps, int reason):
+cdef void trim_interpolate_results(list ts, list ys, list stuffs, Opts* opts, int n_steps, int reason):
     if reason == 2:
         return
     if len(ts) < 2:
@@ -556,9 +556,8 @@ cdef void trim_interpolate_results(list ts, list ys, , list stuffs, Opts* opts, 
     cdef:
         double x1, x, x2, t
         Py_ssize_t i
-        double[:] y1, y2
     if reason == 1:
-        x = opts[0].stop_conditions.t_max:
+        x = opts[0].stop_conditions.t_max
         x1 = ts[-2]
         x2 = ts[-1]
 
@@ -580,11 +579,11 @@ cdef void trim_interpolate_results(list ts, list ys, , list stuffs, Opts* opts, 
         raise ValueError(f'Неясная причина остановки reason = {reason}')
     
     t = (x - x1) / (x2 - x1)
-    y1 = <double[:]>(ys[-2])
-    y2 = <double[:]>(ys[-1])
-    for i in range(y.shape[0]):
+    y1 = ys[-2]
+    y2 = ys[-1]
+    for i in range(y1.shape[0]):
         y2[i] = (1-t) * y1[i] + t * y2[i]
-    y1 = <double[:]>(stuffs[-2])
-    y2 = <double[:]>(stuffs[-1])
-    for i in range(y.shape[0]):
+    y1 = stuffs[-2]
+    y2 = stuffs[-1]
+    for i in range(y1.shape[0]):
         y2[i] = (1-t) * y1[i] + t * y2[i]

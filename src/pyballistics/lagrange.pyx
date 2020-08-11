@@ -165,6 +165,7 @@ def ozvb_lagrange(opts_dict):
         list results
         double t1 = time.perf_counter() 
         double tau
+        str stop_reason
     try:
         layer = LagrangeLayer(opts_dict)
         results = [layer.get_y0()]
@@ -172,8 +173,10 @@ def ozvb_lagrange(opts_dict):
             tau = layer.get_tau()
             layer.step(layer.tau_Ku_filter_W(tau))
             results.append(layer.get_result())
+        stop_reason = layer.get_stop_reason()
+        layer.trim_results(results, stop_reason)
         return {
-            'stop_reason': layer.get_stop_reason(),
+            'stop_reason': stop_reason,
             'execution_time': time.perf_counter() - t1,
             'layers': results
         }
@@ -580,6 +583,42 @@ cdef class LagrangeLayer:
             # d eta_T/dt
             if self.opts.heat.heat_barrel:
                 self.dEta[i] = Nu**2 * self.znam_eta * (self.Ts[i] - self.T_ws[i]) 
+
+    @cython.wraparound(True)
+    def trim_results(self, results, reason):
+        if reason == 'steps_max':
+            return
+
+        layer1 = results[-2]
+        layer2 = results[-1]
+        if reason == 't_max':
+            x = self.opts.stop_conditions.t_max
+            x1 = layer1['t']
+            x2 = layer2['t']
+
+        elif reason == 'v_p':
+            x = self.opts.stop_conditions.v_p
+            x1 = layer1['u'][-1]
+            x2 = layer2['u'][-1]
+
+        elif reason == 'x_p':
+            x = self.opts.stop_conditions.x_p
+            x1 = layer1['x'][-1]
+            x2 = layer2['x'][-1]
+
+        elif reason == 'p_max':
+            x = self.opts.stop_conditions.p_max
+            x1 = np.max(layer1['p'])
+            x2 = np.max(layer2['p'])
+        else:
+            raise ValueError(f'Неясная причина остановки reason = {reason}')
+        
+        t = (x - x1) / (x2 - x1)
+        for k in layer2:
+            if k == 'steps_max':
+                continue
+            layer2[k] = (1-t) * layer1[k] + t * layer2[k]
+            
 
 
 

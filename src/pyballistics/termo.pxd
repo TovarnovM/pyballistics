@@ -57,4 +57,4 @@ cdef int _stop_reason(double t, double[:] y, double[:] stuff, Opts* opts, int n_
 cdef int _step(double t, double[:] y, double[:] stuff, Opts* opts, Cached* cache, double[:,:] y_tmps, double* t1, double[:] y1, double[:] stuff1, MetaTermoOpts* meta_termo)  nogil except -1
 cdef void _fill_dy(double t, double[:] y, double[:] stuff, Opts* opts, Cached* cache, double[:] dy)  nogil
 cpdef dict _construct_results(list ts, list ys, list stuffs, int reason)
-cdef void trim_interpolate_results(list ts, list ys, , list stuffs, Opts* opts, int n_steps, int reason)
+cdef void trim_interpolate_results(list ts, list ys, list stuffs, Opts* opts, int n_steps, int reason)
