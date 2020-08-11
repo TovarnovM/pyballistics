@@ -95,7 +95,7 @@ def ozvb_termo(opts_dict):
         Cached cache
         MetaTermoOpts meta_termo
         double[:] y, stuff, y1, stuff1,  
-        double t1, t, t_ex
+        double t1, t, t_ex, t_interpolate
         double[:,:] y_tmps 
         list ys, stuffs, ts
         int n_steps = 0
@@ -128,6 +128,7 @@ def ozvb_termo(opts_dict):
             y = y1
             stuff = stuff1
         reason = _stop_reason(t, y, stuff, &opts, n_steps)
+        trim_interpolate_results(ts, ys, stuffs, &opts, n_steps, reason)
         results = _construct_results(ts, ys, stuffs, reason)
         results['execution_time'] = time.perf_counter() - t_ex
         return results
@@ -143,7 +144,7 @@ cdef Opts _convert_2_opts(dict opts_full, Pool mem):
     cdef Opts opts 
     opts.n_powders = len(opts_full['powders'])
     opts.powders = <PowderOpts*>mem.alloc(opts.n_powders, sizeof(PowderOpts))
-    cdef int i
+    cdef Py_ssize_t i
     for i in range(opts.n_powders):
         opts.powders[i].omega = opts_full['powders'][i]['omega']
         opts.powders[i].I_k =   opts_full['powders'][i]['I_e']
@@ -286,7 +287,7 @@ cdef void _fill_stuff(double[:] y, Opts* opts, Cached* cache, double[:] stuff)  
     cdef:
         double T
         int n = opts[0].n_powders
-        int i
+        Py_ssize_t i
     for i in range(5,n+5):
         # psi_i
         stuff[i] = get_psi(y[i], opts, i-5)
@@ -341,7 +342,7 @@ cdef void _fill_stuff(double[:] y, Opts* opts, Cached* cache, double[:] stuff)  
 
 
 
-cdef inline double get_psi(double z, Opts* opts, int i)  nogil:
+cdef inline double get_psi(double z, Opts* opts, Py_ssize_t i)  nogil:
     if  z <= 1.0:
         return opts[0].powders[i].kappa_1 * z*(1 + opts[0].powders[i].lambda_1*z + opts[0].powders[i].mu_1*z*z) 
     elif z < opts[0].powders[i].z_e:
@@ -373,7 +374,7 @@ cdef int _stop_reason(double t, double[:] y, double[:] stuff, Opts* opts, int n_
 cdef int _step(double t, double[:] y, double[:] stuff, Opts* opts, Cached* cache, double[:,:] y_tmps,
                 double* t1, double[:] y1, double[:] stuff1, MetaTermoOpts* meta_termo)  nogil except -1:
     cdef:
-        int i
+        Py_ssize_t i
         double dt = meta_termo[0].dt
     if meta_termo[0].method == 0:
         _fill_dy(t, y, stuff, opts, cache, y_tmps[0])
@@ -480,7 +481,7 @@ cdef void _fill_dy(double t, double[:] y, double[:] stuff, Opts* opts, Cached* c
     else:
         dy[4] = 0.0
 
-    cdef int i
+    cdef Py_ssize_t i
     for i in range(opts[0].n_powders):
         # dz_i/dt
         dy[i+5] = ((stuff[0])**opts[0].powders[i].nu)/opts[0].powders[i].I_k * H(opts[0].powders[i].z_e - y[i+5])
@@ -500,7 +501,7 @@ cpdef dict _construct_results(list ts, list ys, list stuffs, int reason):
     T_w = np.empty_like(t)
     k = np.empty_like(t)
     cdef:
-        int i
+        Py_ssize_t i
     
     for i in range(t.shape[0]):
         p_m[i] = stuffs[i][0]
@@ -542,7 +543,48 @@ cpdef dict _construct_results(list ts, list ys, list stuffs, int reason):
         res['stop_reason'] = 'x_p'
     elif reason == 5:
         res['stop_reason'] = 'p_max'
-    
+
     return res
 
+@cython.wraparound(True)
+cdef void trim_interpolate_results(list ts, list ys, , list stuffs, Opts* opts, int n_steps, int reason):
+    if reason == 2:
+        return
+    if len(ts) < 2:
+        return
 
+    cdef:
+        double x1, x, x2, t
+        Py_ssize_t i
+        double[:] y1, y2
+    if reason == 1:
+        x = opts[0].stop_conditions.t_max:
+        x1 = ts[-2]
+        x2 = ts[-1]
+
+    elif reason == 3:
+        x = opts[0].stop_conditions.v_p
+        x1 = ys[-2][4]
+        x2 = ys[-1][4]
+
+    elif reason == 4:
+        x = opts[0].stop_conditions.x_p
+        x1 = ys[-2][3]
+        x2 = ys[-1][3]
+
+    elif reason == 5:
+        x = opts[0].stop_conditions.p_max
+        x1 = stuffs[-2][0]
+        x2 = stuffs[-1][0]
+    else:
+        raise ValueError(f'Неясная причина остановки reason = {reason}')
+    
+    t = (x - x1) / (x2 - x1)
+    y1 = <double[:]>(ys[-2])
+    y2 = <double[:]>(ys[-1])
+    for i in range(y.shape[0]):
+        y2[i] = (1-t) * y1[i] + t * y2[i]
+    y1 = <double[:]>(stuffs[-2])
+    y2 = <double[:]>(stuffs[-1])
+    for i in range(y.shape[0]):
+        y2[i] = (1-t) * y1[i] + t * y2[i]

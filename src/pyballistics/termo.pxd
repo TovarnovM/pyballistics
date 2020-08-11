@@ -51,9 +51,10 @@ cdef (Cached, MetaTermoOpts) _get_cache_meta(dict opts_full, Opts opts, Pool mem
 cdef double[:] _get_y0(Opts* opts)
 cdef double[:] _get_stuff(double[:] y, Opts* opts, Cached* cache)
 cdef void _fill_stuff(double[:] y, Opts* opts, Cached* cache, double[:] stuff)  nogil
-cdef double get_psi(double z, Opts* opts, int i)  nogil
+cdef double get_psi(double z, Opts* opts, Py_ssize_t i)  nogil
 cdef double H(double x)  nogil
 cdef int _stop_reason(double t, double[:] y, double[:] stuff, Opts* opts, int n_steps)  nogil
 cdef int _step(double t, double[:] y, double[:] stuff, Opts* opts, Cached* cache, double[:,:] y_tmps, double* t1, double[:] y1, double[:] stuff1, MetaTermoOpts* meta_termo)  nogil except -1
 cdef void _fill_dy(double t, double[:] y, double[:] stuff, Opts* opts, Cached* cache, double[:] dy)  nogil
 cpdef dict _construct_results(list ts, list ys, list stuffs, int reason)
+cdef void trim_interpolate_results(list ts, list ys, , list stuffs, Opts* opts, int n_steps, int reason)
