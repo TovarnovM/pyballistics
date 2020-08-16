@@ -1,13 +1,14 @@
 from pytest import approx
-from pyballistics.options import get_powder_names, get_termo_options_sample
-import numpy as np
+from pyballistics import get_powder_names, get_options_sample, get_full_options
 
-# TODO доделать тесты)
+def test_get_options_sample():
+    res = get_options_sample()
+    assert res is not None
+
+def test_full_opts():
+    res = get_full_options(get_options_sample())
+    assert res is not None
 
 def test_get_powder_names():
-    pnames = get_powder_names()
-    assert len(pnames) > 0
-
-if __name__ == "__main__":
-    from pyballistics.termo import termo_ballistics
-    print(termo_ballistics(get_termo_options_sample()))
+    res = get_powder_names()
+    assert res

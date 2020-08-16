@@ -381,7 +381,7 @@ def _init_powder_db(db_path):
     global _powder_db 
     _powder_db = {}
     headers = ['name', 'I_e', 'f', 'k', 'T_c', 'delta', 'b', 'z_e', 'kappa_1', 'lambda_1', 'kappa_2', 'lambda_2', 'k_I', 'k_f']
-    with open(db_path)  as f:
+    with open(db_path, encoding='utf-8')  as f:
         f.readline()
         for line in f.readlines():
             ss = line.split(';')
@@ -392,7 +392,7 @@ def _init_powder_db(db_path):
 
 
 def get_db_powder(powder_name):
-    """Возвращает словарь с параметрами набличного пороха с именем powder_name
+    """Возвращает словарь с параметрами табличного пороха с именем powder_name
 
     :param powder_name: Имя табличного пороха (список доступных порохов можно узнать, вызвав функцию get_powder_names())
     :type powder_name: str
