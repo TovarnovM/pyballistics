@@ -351,7 +351,7 @@ cdef inline double get_psi(double z, Opts* opts, Py_ssize_t i)  nogil:
         return 1.0
 
 cdef inline double H(double x)  nogil:
-    return x if x > 0 else 0.0
+    return 1.0 if x > 0 else 0.0
 
 cdef int _stop_reason(double t, double[:] y, double[:] stuff, Opts* opts, int n_steps)  nogil:
     if opts[0].stop_conditions.t_max_flag:

@@ -32,7 +32,7 @@ _schema_init_cond = Schema({
     'd': lambda x: x > 0,    # м, калибр
     'W_0': lambda x: x > 0,      # м^3, начальный объем каморы
     Optional('T_0', default=293.15): lambda x: x > 0, # К, начлаьная температура
-    Optional('S'): lambda x: x > 0,     # м^2, площадь поперечного сечения, если не указан, то pi*d**2 / 4 
+    Optional('n_S', default=1.0): lambda x: x > 0,     #
     'phi_1': lambda x: x > 0,  # коэффициент, учитывающий силу трения в нарезах (участвует в вормуле расчета коэффициента фиктивности массы снаряда)
     'p_0': lambda x: x > 0,   # Па, давление форсирования
 }, ignore_extra_keys=True)
@@ -254,7 +254,7 @@ def get_full_options(opts):
             'phi_1': 1.02,
             'p_0': 30000000.0,
             'T_0': 293.15,
-            'S': 0.01168986626400762},
+            'n_S': 1.0},
         'windage': {
             'shock_wave': True, 
             'p_0a': 100000.0, 
@@ -344,7 +344,7 @@ def _verify_opts_dict_stuff(opts, res, field_name, message, schema, condition_fo
 
 def _fill_optionalz(res):
     if 'S' not in res['init_conditions'] or res['init_conditions']['S'] is None:
-        res['init_conditions']['S'] = pi * (res['init_conditions']['d'])**2 / 4
+        res['init_conditions']['S'] = res['init_conditions']['n_S'] * pi * (res['init_conditions']['d'])**2 / 4
 
     if 'F_0' not in res['heat'] or res['heat']['F_0'] is None:
         res['heat']['F_0'] = 4 * res['init_conditions']['W_0'] / res['init_conditions']['d']

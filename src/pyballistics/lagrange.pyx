@@ -199,7 +199,7 @@ cdef inline double get_psi(double z, Opts* opts, Py_ssize_t i)  nogil:
         return 1.0
 
 cdef inline double H(double x)  nogil:
-    return x if x > 0 else 0.0
+    return 1.0 if x > 0 else 0.0
 
 
 @cython.final
