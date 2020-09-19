@@ -35,6 +35,7 @@ _schema_init_cond = Schema({
     Optional('n_S', default=1.0): lambda x: x > 0,     #
     'phi_1': lambda x: x > 0,  # коэффициент, учитывающий силу трения в нарезах (участвует в вормуле расчета коэффициента фиктивности массы снаряда)
     'p_0': lambda x: x > 0,   # Па, давление форсирования
+    Optional('S'): lambda x: x > 0
 }, ignore_extra_keys=True)
 
 _schema_igniter = Schema({
@@ -47,7 +48,7 @@ _schema_igniter = Schema({
 
 _schema_windage = Schema({
     Optional('shock_wave', default=True): lambda x: isinstance(x, bool), # флаг, нужно ли считать сопротивление перед снарядом как ударную волну. если False, то сопротивление постоянно == p_0a 
-    Optional('p_0a', default=1e5): lambda x: x > 0,        # Па, давление воздуха перед снарядом
+    Optional('p_0a', default=1e5): lambda x: x >= 0,       # Па, давление воздуха перед снарядом
     Optional('k_air', default=1.4): lambda x: x > 0,       # показатель адиабаты воздуха
     Optional('c_0a', default=340): lambda x: x > 0         # м/с, скорость звука в воздухе
 }, ignore_extra_keys=True)
@@ -161,6 +162,39 @@ _sample_termo_options = {
         'x_p': 9
     }
 }
+
+_sample_termo_options_2 = {
+    'powders': [
+        {'omega': 5.7, 'dbname': '22/1 тр'}
+    ],
+    'init_conditions': {
+        'q': 27.3,
+        'd': 0.122,
+        'W_0': 0.01092,
+        'phi_1': 1.02,
+        'p_0': 30e6,
+        'n_S': 1.04
+    },
+    'igniter': {
+        'p_ign_0': 1e6},
+    'heat':{
+        'enabled': False,
+        'heat_barrel': False
+    },
+    'windage':{
+        'p_0a': 1e-9
+    },
+    'meta_termo': {
+        'dt': 1e-6, 
+        'method': 'rk4'},
+    'meta_lagrange': {
+        'n_cells': 300, 
+        'CFL': 0.9},
+    'stop_conditions': {
+        'x_p': 4.88, 
+        'steps_max': 100000
+        }
+    }
 
 def get_full_options(opts):
     """Функция для формирования полного словаря с начальными данными. С проверкой на правильность значений.
@@ -477,6 +511,47 @@ def get_options_sample():
     :rtype: dict
     """
     return deepcopy(_sample_termo_options)
+
+def get_options_sample_2():
+    """Возвращает пример словаря с правильными начальными данными, который может быть
+    использован для расчета в функциях ozvb_termo и ozvb_lagrange
+
+{
+    'powders': [
+        {'omega': 5.7, 'dbname': '22/1 тр'}
+    ],
+    'init_conditions': {
+        'q': 27.3,
+        'd': 0.122,
+        'W_0': 0.01092,
+        'phi_1': 1.02,
+        'p_0': 30e6,
+        'n_S': 1.04
+    },
+    'igniter': {
+        'p_ign_0': 1e6},
+    'heat':{
+        'enabled': False,
+        'heat_barrel': False
+    },
+    'windage':{
+        'p_0a': 1e-9
+    },
+    'meta_termo': {
+        'dt': 1e-6, 
+        'method': 'rk4'},
+    'meta_lagrange': {
+        'n_cells': 300, 
+        'CFL': 0.9},
+    'stop_conditions': {
+        'x_p': 4.88, 
+        'steps_max': 100000
+        }
+    }
+
+    :rtype: dict
+    """
+    return deepcopy(_sample_termo_options_2)
 
 def get_options_agard():
     """Возвращает словарь с начальными данными для задачи AGARD
