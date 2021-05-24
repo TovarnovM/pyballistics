@@ -487,6 +487,7 @@ cdef class LagrangeLayer:
         self.t += tau
         self.tau_last = tau
 
+
     @cython.initializedcheck(False)
     cpdef double get_p_a(self, double v_p) nogil:
         cdef:
