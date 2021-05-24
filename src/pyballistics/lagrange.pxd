@@ -33,6 +33,7 @@ cdef class LagrangeLayer:
     cpdef void synch_es_Ts_Wcs_cs(self) nogil
     cpdef void synch_ps_Ts_Wcs_cs(self) nogil
     cpdef void step(self, double tau) nogil
+    cpdef void step_general(self, double tau, double u_left, double u_right) nogil
     cpdef double get_p_a(self, double v_p) nogil
     cpdef double get_omega_ign(self)
     cpdef bint stop_reason(self) nogil

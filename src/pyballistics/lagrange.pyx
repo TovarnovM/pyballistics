@@ -489,6 +489,56 @@ cdef class LagrangeLayer:
 
 
     @cython.initializedcheck(False)
+    cpdef void step_general(self, double tau, double u_left, double u_right) nogil:
+        cdef:
+            Py_ssize_t i, j, i_1 = self.us.shape[0]-1
+            double S = self.opts.init_conditions.S
+            double d = self.opts.init_conditions.d
+            double p_a = self.get_p_a(self.us[i_1])
+            double eta, x_tmp, v_lft, v_rgt
+
+        self.us[0] = u_left
+        for i in range(1, i_1):
+            self.us[i] -= tau * S * (self.ps[i] - self.ps[i-1]) / (0.5 * (self.m_sums[i-1]+self.m_sums[i]))
+        self.us[i_1] = u_right
+
+        self.xs_tmp[:] = self.xs
+        for i in range(self.xs.shape[0]):
+            self.xs[i] += self.us[i] * tau
+
+        if self.opts.heat.heat_barrel:
+            for i in range(self.T_ws.shape[0]):
+                eta = (self.T_ws[i] - self.opts.heat.T_w0) 
+                eta *= eta
+                eta += tau * self.dEta[i]
+                self.T_ws[i] = sqrt(eta) + self.opts.heat.T_w0
+            self.T_ws_tmp[:] = self.T_ws[:]
+            fill_averages(self.T_ws_tmp, self.xs_tmp, self.xs, self.T_ws)
+            i = self.T_ws.shape[0] - 1
+            x_tmp = self.xs_tmp[i+1] - self.xs_tmp[i]
+            v_lft = self.us[i]
+            v_rgt = self.us[i+1]
+            self.T_ws[i] = self.T_ws_tmp[i] * (x_tmp - tau * v_lft) / (x_tmp + tau * (-v_lft + v_rgt)) + self.opts.heat.T_w0 * (tau * v_rgt) / (x_tmp + tau * (-v_lft + v_rgt))
+            
+        self.synch_Ws()
+        self.synch_rhos()
+        
+        for i in range(self.es.shape[0]):
+            self.es[i] -= tau * (self.ps[i] * S * (self.us[i+1] - self.us[i])/self.m_sums[i] + 4 * self.qs[i] / self.rhos[i] / d)
+        for i in range(self.zs.shape[0]):
+            for j in range(1, self.zs.shape[1]):
+                self.zs[i, j] += tau * (self.ps[i] ** self.opts.powders[j-1].nu) / self.opts.powders[j-1].I_k * H(self.opts.powders[j-1].z_e - self.zs[i, j])
+       
+        self.synch_psis()
+        self.synch_ks()
+        self.synch_ps_Ts_Wcs_cs()
+        self.synch_qs()
+        self.step_count += 1
+        self.t += tau
+        self.tau_last = tau
+
+
+    @cython.initializedcheck(False)
     cpdef double get_p_a(self, double v_p) nogil:
         cdef:
             double p_a = self.opts.windage.p_0a
