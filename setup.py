@@ -31,6 +31,7 @@ def no_cythonize(extensions, **_ignore):
 
 extensions = [
     Extension("pyballistics.termo", ["src/pyballistics/termo.pyx"], language="c"),
+    Extension("pyballistics.termo_old", ["src/pyballistics/termo_old.pyx"], language="c"),
     Extension("pyballistics.lagrange", ["src/pyballistics/lagrange.pyx"], language="c"),
     Extension("pyballistics.termalconduct", ["src/pyballistics/termalconduct.pyx"], language="c"),
 ]
