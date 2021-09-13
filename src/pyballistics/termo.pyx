@@ -444,7 +444,8 @@ cdef void _fill_dy(double t, double[:] y, double[:] stuff, Opts* opts, Cached* c
         double mu, Re, Nu, S_w, v_eta, vi
     
     if opts[0].heat.enabled:
-        mu = opts[0].heat.mu_0 * opts[0].heat.Pr * ((stuff[1]/opts[0].heat.T_0)**1.5) * \
+                             # * opts[0].heat.Pr
+        mu = opts[0].heat.mu_0                   * ((stuff[1]/opts[0].heat.T_0)**1.5) * \  
             (opts[0].heat.T_c + opts[0].heat.T_0)/(opts[0].heat.T_c + stuff[1])
         Re = cache[0].om_sum * y[4] * opts[0].init_conditions.d / (stuff[3]*2*mu)
         Nu = 0.023*(Re**0.8)*(opts[0].heat.Pr**0.4)
