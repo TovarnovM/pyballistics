@@ -308,7 +308,7 @@ cdef class LagrangeLayer:
     cpdef void set_state(self, dict state):
         self.t = state['t']
         self.step_count = state['step_count']
-        self.tau_last = state['tau_last'],
+        self.tau_last = state['tau_last']
         self.xs = state['xs']
         self.us = state['us']
         self.ps = state['ps']
