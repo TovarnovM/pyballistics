@@ -582,7 +582,7 @@ cdef class LagrangeLayer:
                 self.qs[i] = self.ps[i] * self.opts.heat.Sigma_T * vi / self.Rs[i]
             # d eta_T/dt
             if self.opts.heat.heat_barrel:
-                self.dEta[i] = Nu**2 * self.znam_eta * (self.Ts[i] - self.T_ws[i]) 
+                self.dEta[i] = Nu**2 * self.znam_eta * (self.Ts[i] - self.T_ws[i]) * (self.Ts[i] - self.T_ws[i]) 
 
     @cython.wraparound(True)
     def trim_results(self, results, reason):

@@ -464,7 +464,7 @@ cdef void _fill_dy(double t, double[:] y, double[:] stuff, Opts* opts, Cached* c
             v_eta = - 2 * y[4] * y[2] / (y[3] + cache[0].l_0)
             if v_eta > 0:
                 v_eta = 0.0
-            dy[2] = Nu**2 *cache[0].znam_eta * (stuff[1] - stuff[2]) + v_eta
+            dy[2] = Nu**2 *cache[0].znam_eta * (stuff[1] - stuff[2]) * (stuff[1] - stuff[2]) + v_eta
         else:
             dy[2] = 0
     else:
