@@ -14,7 +14,7 @@ _schema_powder_dict = Schema({
     'delta': lambda x: x > 0,       # кг/м^3, плотность пороха   
     'f': lambda x: x > 0,     # Дж/кг, сила пороха 
     'k': lambda x: x > 0,        # коэффициент адиабаты пороховых газов
-    'T_c': lambda x: x > 0,     # К, темп. горения пороха
+    'T_p': lambda x: x > 0,     # К, темп. горения пороха
     'z_e': lambda x: x > 0,     # относительная толщина сгоревшего слоя конца горения
     'kappa_1': Or(float, int), # коэффициенты в геометрическом законе горения
     'lambda_1': Or(float, int),
@@ -60,12 +60,12 @@ _schema_heat = Schema({
     Optional('Pr', default=0.74): lambda x: x >= 0, # число Прандля
     Optional('T_w0'): lambda x: x > 0, # температура стенки, если не указывть - то будет взята начальная температура
     Optional('mu_0', default=0.175e-4): lambda x: x > 0, # Па*с, Коэффициент динамической вязкости пороховых газов для формулы Сазерленда
-    Optional('T_c', default=628): lambda x: x > 0, # К, тоже для формулы Сазерленда
-    Optional('T_0', default=273): lambda x: x > 0, # K, тоже для формулы Сазерленда
-    Optional('c_c', default=500): lambda x: x > 0, # Дж/(кг * град) теплоемкость материала ствола
-    Optional('rho_c', default=7900):  lambda x: x > 0, # кг/м^3 плотность маетриала ствола
-    Optional('lambda_c', default=40):  lambda x: x > 0, # Вт/(м·град), теплопроводность материала ствола
-    Optional('lambda', default= 0.2218): lambda x: x > 0, # Вт/(м * К), теплопроводность пороховых газов
+    Optional('T_cs', default=628): lambda x: x > 0, # К, тоже для формулы Сазерленда
+    Optional('T_0s', default=273): lambda x: x > 0, # K, тоже для формулы Сазерленда
+    Optional('c_b', default=500): lambda x: x > 0, # Дж/(кг * град) теплоемкость материала ствола
+    Optional('rho_b', default=7900):  lambda x: x > 0, # кг/м^3 плотность маетриала ствола
+    Optional('lambda_b', default=40):  lambda x: x > 0, # Вт/(м·град), теплопроводность материала ствола
+    Optional('lambda_g', default= 0.2218): lambda x: x > 0, # Вт/(м * К), теплопроводность пороховых газов
     Optional('Sigma_T') : lambda x: x >=0, # На случай использования старого неправильного закона теплопередачи
     Optional('vi'): lambda x: True # аналогично
 }, ignore_extra_keys=True)
@@ -95,7 +95,7 @@ _schema_stop_conditions = Schema({
 _agard_options = {
     'powders': [{
         'I_e': 250495 ,
-        'T_c': 2585,
+        'T_p': 2585,
         'b': 0.0010838,
         'f': 1.009e6,
         'k': 1.27,
@@ -245,7 +245,7 @@ def get_full_options(opts):
             {'I_e': 1120000.0,
             'f': 1004000.0,
             'k': 1.243,
-            'T_c': 2650.0,
+            'T_p': 2650.0,
             'delta': 1520.0,
             'b': 0.001085,
             'z_e': 1.0,
@@ -265,7 +265,7 @@ def get_full_options(opts):
             {'I_e': 1530000.0,
             'f': 983000.0,
             'k': 1.232,
-            'T_c': 2755.0,
+            'T_p': 2755.0,
             'delta': 1600.0,
             'b': 0.001029,
             'z_e': 1.501,
@@ -295,14 +295,14 @@ def get_full_options(opts):
             'k_air': 1.4, 
             'c_0a': 340},
         'heat': {
-            'T_c': 628,
+            'T_cs': 628,
             'heat_barrel': True,
-            'T_0': 273,
-            'lambda_c': 40,
-            'c_c': 500,
+            'T_0s': 273,
+            'lambda_b': 40,
+            'c_b': 500,
             'enabled': True,
-            'lambda': 0.2218,
-            'rho_c': 7900,
+            'lambda_g': 0.2218,
+            'rho_b': 7900,
             'mu_0': 1.75e-05,
             'Pr': 0.74,
             'F_0': 1.0655737704918034,
@@ -393,7 +393,7 @@ def _fill_optionalz(res):
         res['heat']['vi'] = 0 
     
     for pd in res['powders']:
-        pd['R'] = pd['f'] / pd['T_c']
+        pd['R'] = pd['f'] / pd['T_p']
         pd['M'] = 8.31446261815324 / pd['R']
 
     ign = res['igniter']
@@ -414,7 +414,7 @@ _powder_db = None
 def _init_powder_db(db_path):
     global _powder_db 
     _powder_db = {}
-    headers = ['name', 'I_e', 'f', 'k', 'T_c', 'delta', 'b', 'z_e', 'kappa_1', 'lambda_1', 'kappa_2', 'lambda_2', 'k_I', 'k_f']
+    headers = ['name', 'I_e', 'f', 'k', 'T_p', 'delta', 'b', 'z_e', 'kappa_1', 'lambda_1', 'kappa_2', 'lambda_2', 'k_I', 'k_f']
     with open(db_path, encoding='utf-8')  as f:
         f.readline()
         for line in f.readlines():
@@ -441,7 +441,7 @@ def get_db_powder(powder_name):
             'I_e': 320000.0,    # Па*с, импульс конца горения 
             'f': 1027000.0,     # Дж/кг, сила пороха 
             'k': 1.228,         # коэффициент адиабаты пороховых газов
-            'T_c': 3006.0,      # К, темп. горения пороха
+            'T_p': 3006.0,      # К, темп. горения пороха
             'delta': 1600.0,    # кг/м^3, плотность пороха 
             'b': 0.001008,      # м^3/кг, коволюм пороховых газов
             'z_e': 1.488,       # относительная толщина сгоревшего слоя конца горения
@@ -562,7 +562,7 @@ def get_options_agard():
     {
         'powders': [{
             'I_e': 250495 ,
-            'T_c': 2585,
+            'T_p': 2585,
             'b': 0.0010838,
             'f': 1.009e6,
             'k': 1.27,
