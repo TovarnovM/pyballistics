@@ -176,7 +176,7 @@ _sample_termo_options_2 = {
         'n_S': 1.04
     },
     'igniter': {
-        'p_ign_0': 5e6},
+        'p_ign_0': 1e6},
     'heat':{
         'enabled': False,
         'heat_barrel': False

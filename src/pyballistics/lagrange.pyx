@@ -566,7 +566,7 @@ cdef class LagrangeLayer:
 
         for i in range(self.qs.shape[0]):
                                    # * self.opts.heat.Pr
-            mu = self.opts.heat.mu_0                    * ((self.Ts[i]/self.opts.heat.T_0)**1.5) * \
+            mu = self.opts.heat.mu_0 * ((self.Ts[i]/self.opts.heat.T_0)**1.5) * \
                 (self.opts.heat.T_c + self.opts.heat.T_0)/(self.opts.heat.T_c + self.Ts[i])
             Re = self.rhos[i]* 0.5*fabs(self.us[i+1]+self.us[i]) * self.opts.init_conditions.d / mu
             Nu = 0.023*(Re**0.8)*(self.opts.heat.Pr**0.4)
