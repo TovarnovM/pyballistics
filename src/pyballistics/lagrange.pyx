@@ -191,12 +191,19 @@ def ozvb_lagrange(opts_dict):
 
 
 cdef inline double get_psi(double z, Opts* opts, Py_ssize_t i)  nogil:
+    cdef double psi = 0.0
     if  z <= 1.0:
-        return opts[0].powders[i].kappa_1 * z*(1 + opts[0].powders[i].lambda_1*z + opts[0].powders[i].mu_1*z*z) 
+        psi = opts[0].powders[i].kappa_1 * z*(1 + opts[0].powders[i].lambda_1*z + opts[0].powders[i].mu_1*z*z) 
     elif z < opts[0].powders[i].z_e:
-        return opts[0].powders[i].kappa_1 * (1 + opts[0].powders[i].lambda_1+ opts[0].powders[i].mu_1) + opts[0].powders[i].kappa_2 * (z-1)*(1 + opts[0].powders[i].lambda_2*(z-1)+ opts[0].powders[i].mu_2*(z-1)*(z-1)) 
+        psi = opts[0].powders[i].kappa_1 * (1 + opts[0].powders[i].lambda_1+ opts[0].powders[i].mu_1) + opts[0].powders[i].kappa_2 * (z-1)*(1 + opts[0].powders[i].lambda_2*(z-1)+ opts[0].powders[i].mu_2*(z-1)*(z-1)) 
     else: 
         return 1.0
+    if psi > 1.0:
+        return 1.0
+    if psi < 0:
+        return 0.0
+    return psi
+
 
 cdef inline double H(double x)  nogil:
     return 1.0 if x > 0 else 0.0
