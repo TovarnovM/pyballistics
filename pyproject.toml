@@ -1,0 +1,67 @@
+[build-system]
+# ВАЖНО: cymem нужен в build env, потому что .pxd делает "cimport Pool"
+requires = ["setuptools>=68", "wheel", "Cython>=3.0", "cymem>=2.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyballistics"
+
+version = "1.2.0"
+
+description = "Library for calculating internal ballistics"
+readme = "README.md"
+requires-python = ">=3.9"
+
+# Setuptools (2026) ругается на license-table; используем SPDX-строку
+license = "MIT"
+license-files = ["LICENSE.txt"]
+
+authors = [{ name = "Mikhail Tovarnov", email = "mtovarnov@mail.com" }]
+
+dependencies = [
+  "cymem>=2.0.3",
+  "numpy>=1.17",
+  "schema>=0.7.2",
+]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Natural Language :: Russian",
+  "Operating System :: OS Independent",
+  "Programming Language :: C",
+  "Programming Language :: Cython",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7",
+  "ruff>=0.4",
+  "build",
+  "twine",
+  "cibuildwheel",
+]
+docs = ["sphinx", "sphinx-rtd-theme"]
+
+[project.urls]
+Homepage = "https://github.com/TovarnovM/pyballistics"
+Repository = "https://github.com/TovarnovM/pyballistics"
+Issues = "https://github.com/TovarnovM/pyballistics/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Чтобы гарантированно упаковать CSV в wheel
+[tool.setuptools.package-data]
+pyballistics = ["*.csv"]

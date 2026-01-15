@@ -1,62 +1,59 @@
-# python setup.py bdist_wheel
-# pip install -e .
-
-# python setup.py sdist
-# $Env:CYTHONIZE=1
-# pip install twine
-# twine upload dist/*
-
-
+# setup.py (нужен только для Cython ext_modules)
+from __future__ import annotations
 
 import os
-from setuptools import setup, find_packages, Extension
+from setuptools import Extension, setup
+from Cython.Build import cythonize
 
 
-# https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules
-def no_cythonize(extensions, **_ignore):
-    for extension in extensions:
-        sources = []
-        for sfile in extension.sources:
-            path, ext = os.path.splitext(sfile)
-            if ext in (".pyx", ".py"):
-                if extension.language == "c++":
-                    ext = ".cpp"
-                else:
-                    ext = ".c"
-                sfile = path + ext
-            sources.append(sfile)
-        extension.sources[:] = sources
-    return extensions
+def _ext_language() -> str:
+    """
+    Управляем генерацией .c/.cpp явно:
+      - PYBALLISTICS_CYTHON_LANG=c   -> language="c"   -> Cython генерирует .c
+      - PYBALLISTICS_CYTHON_LANG=cpp -> language="c++" -> Cython генерирует .cpp
+    """
+    lang = os.getenv("PYBALLISTICS_CYTHON_LANG", "c").strip().lower()
+    if lang in ("cpp", "c++"):
+        return "c++"
+    return "c"
 
+
+LANG = _ext_language()
+
+extra_compile_args = ["-O3"]
+if LANG == "c++":
+    extra_compile_args += ["-std=c++17"]
 
 extensions = [
-    Extension("pyballistics.termo", ["src/pyballistics/termo.pyx"], language="c"),
-    Extension("pyballistics.lagrange", ["src/pyballistics/lagrange.pyx"], language="c"),
-    Extension("pyballistics.termalconduct", ["src/pyballistics/termalconduct.pyx"], language="c"),
+    Extension(
+        "pyballistics.termo",
+        ["src/pyballistics/termo.pyx"],
+        language=LANG,
+        extra_compile_args=extra_compile_args,
+    ),
+    Extension(
+        "pyballistics.lagrange",
+        ["src/pyballistics/lagrange.pyx"],
+        language=LANG,
+        extra_compile_args=extra_compile_args,
+    ),
+    Extension(
+        "pyballistics.termalconduct",
+        ["src/pyballistics/termalconduct.pyx"],
+        language=LANG,
+        extra_compile_args=extra_compile_args,
+    ),
 ]
 
-CYTHONIZE = bool(int(os.getenv("CYTHONIZE", 0)))
-
-if CYTHONIZE:
-    from Cython.Build import cythonize
-    compiler_directives = {"language_level": 3, "embedsignature": True, "boundscheck": False, "wraparound": False, "cdivision": True, 'nonecheck': False}
-    extensions = cythonize(extensions, compiler_directives=compiler_directives, annotate=False)
-else:
-    extensions = no_cythonize(extensions)
-
-with open("requirements.txt") as fp:
-    install_requires = fp.read().strip().split("\n")
-
-with open("requirements-dev.txt") as fp:
-    dev_requires = fp.read().strip().split("\n")
-
 setup(
-    ext_modules=extensions,
-    install_requires=install_requires,
-    extras_require={
-        "dev": dev_requires,
-        "docs": ["sphinx", "sphinx-rtd-theme"]
-    },
-    include_package_data=True
-    # data_files = [('', ['src/pyballistics/gpowders_si.csv'])]
+    ext_modules=cythonize(
+        extensions,
+        compiler_directives={
+            "language_level": 3,
+            "boundscheck": False,
+            "wraparound": False,
+            "initializedcheck": False,
+            "cdivision": True,
+        },
+    )
 )

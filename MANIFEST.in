@@ -1,6 +1,6 @@
 include requirements*.txt
 recursive-include src *.csv
-include LICENSE.txt
+include LICENSE
 recursive-include src *.html
 recursive-include src *.pxd
 recursive-include src *.pyx
