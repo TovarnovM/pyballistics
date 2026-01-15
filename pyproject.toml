@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyballistics"
 
-version = "1.2.0"
+version = "1.2.1"
 
 description = "Library for calculating internal ballistics"
 readme = "README.md"
@@ -14,7 +14,7 @@ requires-python = ">=3.9"
 
 # Setuptools (2026) ругается на license-table; используем SPDX-строку
 license = "MIT"
-license-files = ["LICENSE.txt"]
+license-files = ["LICENSE"]
 
 authors = [{ name = "Mikhail Tovarnov", email = "mtovarnov@mail.com" }]
 
