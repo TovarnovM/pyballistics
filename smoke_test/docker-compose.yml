@@ -1,0 +1,26 @@
+services:
+  smoke:
+    build:
+      context: ..
+      dockerfile: smoke_test/.dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+
+    environment:
+      # Optional: test a specific released version. Empty -> latest.
+      PYBALLISTICS_VERSION: ${PYBALLISTICS_VERSION:-}
+
+      # 1 -> require wheel-only install to succeed (no sdist build)
+      STRICT_WHEEL: ${STRICT_WHEEL:-0}
+
+      # If you publish C++ wheels and need to force Cython to emit C++ during builds,
+      # this is here for symmetry with setup.py (not required for install smoke).
+      PYBALLISTICS_CYTHON_LANG: ${PYBALLISTICS_CYTHON_LANG:-}
+
+    # No command needed; CMD is defined in the Dockerfile.
+
+
+
+
+# PYTHON_VERSION=3.12 STRICT_WHEEL=1 docker compose -f smoke_test/docker-compose.yml up --build --abort-on-container-exit
+# PYTHON_VERSION=3.12 STRICT_WHEEL=1 docker-compose -f smoke_test/docker-compose.yml up --build --abort-on-container-exit
